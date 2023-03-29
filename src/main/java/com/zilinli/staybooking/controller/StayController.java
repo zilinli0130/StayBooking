@@ -2,7 +2,7 @@
 // * Documentation
 // * Author: zilin.li
 // * Date: 03/23
-// * Definition: Implementation of CustomExceptionHandler class.
+// * Definition: Implementation of StayController class.
 //**********************************************************************************************************************
 
 package com.zilinli.staybooking.controller;
@@ -11,43 +11,49 @@ package com.zilinli.staybooking.controller;
 //**********************************************************************************************************************
 
 // Project includes
-import com.zilinli.staybooking.exception.StayNotExistException;
-import com.zilinli.staybooking.exception.UserAlreadyExistException;
-import com.zilinli.staybooking.exception.UserNotExistException;
+import com.zilinli.staybooking.model.Stay;
+import com.zilinli.staybooking.service.StayService;
 
 // Framework includes
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.bind.annotation.*;
+
+// System includes
+import java.util.List;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
-@ControllerAdvice
-public class CustomExceptionHandler {
+@RestController
+public class StayController {
 
 //**********************************************************************************************************************
 // * Class constructors
 //**********************************************************************************************************************
 
+    public StayController(StayService stayService) {
+        this.stayService = stayService;
+    }
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    @ExceptionHandler(UserAlreadyExistException.class)
-    public final ResponseEntity<String> handleUserAlreadyExistExceptions(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    @GetMapping(value = "/stays")
+    public List<Stay> listStays(@RequestParam(name = "host") String hostName) {
+        return stayService.listByUser(hostName);
     }
 
-    @ExceptionHandler(UserNotExistException.class)
-    public final ResponseEntity<String> handleUserNotExistExceptions(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    @GetMapping(value = "/stays/id")
+    public Stay getStay(@RequestParam(name = "stay_id") Long stayId, @RequestParam(name = "host") String hostName) {
+        return stayService.findByIdAndHost(stayId, hostName);
     }
 
-    @ExceptionHandler(StayNotExistException.class)
-    public final ResponseEntity<String> handleStayNotExistExceptions(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    @PostMapping("/stays")
+    public void addStay(@RequestBody Stay stay) {
+        stayService.addStay(stay);
+    }
+
+    @DeleteMapping("/stays")
+    public void deleteStay(@RequestParam(name = "stay_id") Long stayId, @RequestParam(name = "host") String hostName) {
+        stayService.delete(stayId, hostName);
     }
 
 //**********************************************************************************************************************
@@ -62,5 +68,5 @@ public class CustomExceptionHandler {
 // * Private attributes
 //**********************************************************************************************************************
 
-
+    private final StayService stayService;
 }

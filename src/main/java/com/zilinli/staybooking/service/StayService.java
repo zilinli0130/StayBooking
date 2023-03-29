@@ -2,54 +2,63 @@
 // * Documentation
 // * Author: zilin.li
 // * Date: 03/23
-// * Definition: Implementation of CustomExceptionHandler class.
+// * Definition: Implementation of StayService class.
 //**********************************************************************************************************************
 
-package com.zilinli.staybooking.controller;
+package com.zilinli.staybooking.service;
 //**********************************************************************************************************************
 // * Includes
 //**********************************************************************************************************************
 
 // Project includes
 import com.zilinli.staybooking.exception.StayNotExistException;
-import com.zilinli.staybooking.exception.UserAlreadyExistException;
-import com.zilinli.staybooking.exception.UserNotExistException;
+import com.zilinli.staybooking.model.Stay;
+import com.zilinli.staybooking.model.User;
+import com.zilinli.staybooking.repository.StayRepository;
 
 // Framework includes
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
-@ControllerAdvice
-public class CustomExceptionHandler {
+@Service
+public class StayService {
 
 //**********************************************************************************************************************
 // * Class constructors
 //**********************************************************************************************************************
-
+    public StayService(StayRepository stayRepository) {
+        this.stayRepository = stayRepository;
+    }
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    @ExceptionHandler(UserAlreadyExistException.class)
-    public final ResponseEntity<String> handleUserAlreadyExistExceptions(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    public List<Stay> listByUser(String username) {
+        return stayRepository.findByHost(new User.Builder().setUsername(username).build());
     }
 
-    @ExceptionHandler(UserNotExistException.class)
-    public final ResponseEntity<String> handleUserNotExistExceptions(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    public Stay findByIdAndHost(Long stayId, String username) throws StayNotExistException {
+        Stay stay = stayRepository.findByIdAndHost(stayId, new User.Builder().setUsername(username).build());
+        if (stay == null) {
+            throw new StayNotExistException("Stay does not exist");
+        }
+        return stay;
     }
 
-    @ExceptionHandler(StayNotExistException.class)
-    public final ResponseEntity<String> handleStayNotExistExceptions(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    public void addStay(Stay stay) {
+        stayRepository.save(stay);
     }
 
+    public void delete(Long stayId, String username) {
+        Stay stay = stayRepository.findByIdAndHost(stayId, new User.Builder().setUsername(username).build());
+        if (stay == null) {
+            throw new StayNotExistException("Stay does not exist");
+        }
+        stayRepository.deleteById(stayId);
+    }
 //**********************************************************************************************************************
 // * Protected methods
 //**********************************************************************************************************************
@@ -62,5 +71,5 @@ public class CustomExceptionHandler {
 // * Private attributes
 //**********************************************************************************************************************
 
-
+    private final StayRepository stayRepository;
 }

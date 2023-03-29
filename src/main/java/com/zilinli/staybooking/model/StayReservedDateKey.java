@@ -2,55 +2,71 @@
 // * Documentation
 // * Author: zilin.li
 // * Date: 03/23
-// * Definition: Implementation of CustomExceptionHandler class.
+// * Definition: Implementation of StayReservedDateKey class.
 //**********************************************************************************************************************
 
-package com.zilinli.staybooking.controller;
+package com.zilinli.staybooking.model;
 //**********************************************************************************************************************
 // * Includes
 //**********************************************************************************************************************
 
-// Project includes
-import com.zilinli.staybooking.exception.StayNotExistException;
-import com.zilinli.staybooking.exception.UserAlreadyExistException;
-import com.zilinli.staybooking.exception.UserNotExistException;
 
-// Framework includes
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
+import javax.persistence.Embeddable;
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.Objects;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
-@ControllerAdvice
-public class CustomExceptionHandler {
+@Embeddable
+public class StayReservedDateKey implements Serializable {
 
 //**********************************************************************************************************************
 // * Class constructors
 //**********************************************************************************************************************
+    public StayReservedDateKey() {}
+
+    public StayReservedDateKey(Long stay_id, LocalDate date) {
+        this.stay_id = stay_id;
+        this.date = date;
+    }
 
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    @ExceptionHandler(UserAlreadyExistException.class)
-    public final ResponseEntity<String> handleUserAlreadyExistExceptions(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    public Long getStay_id() {
+        return stay_id;
     }
 
-    @ExceptionHandler(UserNotExistException.class)
-    public final ResponseEntity<String> handleUserNotExistExceptions(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    public StayReservedDateKey setStay_id(Long stay_id) {
+        this.stay_id = stay_id;
+        return this;
     }
 
-    @ExceptionHandler(StayNotExistException.class)
-    public final ResponseEntity<String> handleStayNotExistExceptions(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    public LocalDate getDate() {
+        return date;
     }
 
-//**********************************************************************************************************************
+    public StayReservedDateKey setDate(LocalDate date) {
+        this.date = date;
+        return this;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(stay_id, date);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || this.getClass() != o.getClass()) return false;
+        StayReservedDateKey temp = (StayReservedDateKey) o;
+        return this.stay_id.equals(temp.stay_id) && this.date.equals(temp.date);
+    }
+
+    //**********************************************************************************************************************
 // * Protected methods
 //**********************************************************************************************************************
 
@@ -61,6 +77,10 @@ public class CustomExceptionHandler {
 //**********************************************************************************************************************
 // * Private attributes
 //**********************************************************************************************************************
+    private Long stay_id;
+    private LocalDate date;
+
+    private static final long serialVersionUID = 1L;
 
 
 }

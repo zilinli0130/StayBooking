@@ -2,31 +2,30 @@
 // * Documentation
 // * Author: zilin.li
 // * Date: 03/23
-// * Definition: Implementation of CustomExceptionHandler class.
+// * Definition: Implementation of StayRepository class.
 //**********************************************************************************************************************
 
-package com.zilinli.staybooking.controller;
+package com.zilinli.staybooking.repository;
 //**********************************************************************************************************************
 // * Includes
 //**********************************************************************************************************************
 
 // Project includes
-import com.zilinli.staybooking.exception.StayNotExistException;
-import com.zilinli.staybooking.exception.UserAlreadyExistException;
-import com.zilinli.staybooking.exception.UserNotExistException;
+import com.zilinli.staybooking.model.Stay;
+import com.zilinli.staybooking.model.User;
 
 // Framework includes
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+// System includes
+import java.util.List;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
-@ControllerAdvice
-public class CustomExceptionHandler {
+@Repository
+public interface StayRepository extends JpaRepository<Stay, Long> {
 
 //**********************************************************************************************************************
 // * Class constructors
@@ -35,21 +34,8 @@ public class CustomExceptionHandler {
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    @ExceptionHandler(UserAlreadyExistException.class)
-    public final ResponseEntity<String> handleUserAlreadyExistExceptions(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler(UserNotExistException.class)
-    public final ResponseEntity<String> handleUserNotExistExceptions(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(StayNotExistException.class)
-    public final ResponseEntity<String> handleStayNotExistExceptions(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
-    }
-
+    List<Stay> findByHost(User user);
+    Stay findByIdAndHost(Long id, User host);
 //**********************************************************************************************************************
 // * Protected methods
 //**********************************************************************************************************************
