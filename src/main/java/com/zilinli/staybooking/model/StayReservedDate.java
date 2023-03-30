@@ -12,13 +12,14 @@ package com.zilinli.staybooking.model;
 
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
 @Entity
 @Table(name = "stay_reserved_date")
-public class StayReservedDate {
+public class StayReservedDate implements Serializable {
 
 //**********************************************************************************************************************
 // * Class constructors

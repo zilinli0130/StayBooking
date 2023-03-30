@@ -2,73 +2,56 @@
 // * Documentation
 // * Author: zilin.li
 // * Date: 03/23
-// * Definition: Implementation of StayController class.
+// * Definition: Implementation of StayImage class.
 //**********************************************************************************************************************
 
-package com.zilinli.staybooking.controller;
+package com.zilinli.staybooking.model;
 //**********************************************************************************************************************
 // * Includes
 //**********************************************************************************************************************
 
-// Project includes
-import com.zilinli.staybooking.model.Stay;
-import com.zilinli.staybooking.model.User;
-import com.zilinli.staybooking.service.StayService;
 
-// Framework includes
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-// System includes
-import java.util.List;
+import javax.persistence.*;
+import java.io.Serializable;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
-@RestController
-public class StayController {
+@Entity
+@Table(name = "stay_image")
+public class StayImage implements Serializable {
 
 //**********************************************************************************************************************
 // * Class constructors
 //**********************************************************************************************************************
+    public StayImage() { }
 
-    public StayController(StayService stayService) {
-        this.stayService = stayService;
+    public StayImage(String url, Stay stay) {
+        this.url = url;
+        this.stay = stay;
     }
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    @GetMapping(value = "/stays")
-    public List<Stay> listStays(@RequestParam(name = "host") String hostName) {
-        return stayService.listByUser(hostName);
+
+    public String getUrl() {
+        return url;
     }
 
-    @GetMapping(value = "/stays/id")
-    public Stay getStay(@RequestParam(name = "stay_id") Long stayId, @RequestParam(name = "host") String hostName) {
-        return stayService.findByIdAndHost(stayId, hostName);
+    public StayImage setUrl(String url) {
+        this.url = url;
+        return this;
     }
 
-    @PostMapping("/stays")
-    public void addStay(
-            @RequestParam("name") String name,
-            @RequestParam("address") String address,
-            @RequestParam("description") String description,
-            @RequestParam("host") String host,
-            @RequestParam("guest_number") int guestNumber,
-            @RequestParam("images") MultipartFile[] images) {
-
-        Stay stay = new Stay.Builder().setName(name)
-                .setAddress(address)
-                .setDescription(description)
-                .setGuestNumber(guestNumber)
-                .setHost(new User.Builder().setUsername(host).build())
-                .build();
-        stayService.addStay(stay, images);
+    public Stay getStay() {
+        return stay;
     }
 
-    @DeleteMapping("/stays")
-    public void deleteStay(@RequestParam(name = "stay_id") Long stayId, @RequestParam(name = "host") String hostName) {
-        stayService.delete(stayId, hostName);
+    public StayImage setStay(Stay stay) {
+        this.stay = stay;
+        return this;
     }
 
 //**********************************************************************************************************************
@@ -83,5 +66,14 @@ public class StayController {
 // * Private attributes
 //**********************************************************************************************************************
 
-    private final StayService stayService;
+    @Id
+    private String url;
+
+    @ManyToOne
+    @JoinColumn(name = "stay_id")
+    @JsonIgnore
+    private Stay stay;
+
+    private static final long serialVersionUID = 1L;
+
 }

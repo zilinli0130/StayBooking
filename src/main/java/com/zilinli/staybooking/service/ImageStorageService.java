@@ -2,7 +2,7 @@
 // * Documentation
 // * Author: zilin.li
 // * Date: 03/23
-// * Definition: Implementation of StayService class.
+// * Definition: Implementation of ImageStorageService class.
 //**********************************************************************************************************************
 
 package com.zilinli.staybooking.service;
@@ -11,74 +11,55 @@ package com.zilinli.staybooking.service;
 //**********************************************************************************************************************
 
 // Project includes
-import com.zilinli.staybooking.exception.StayNotExistException;
-import com.zilinli.staybooking.model.Stay;
-import com.zilinli.staybooking.model.StayImage;
-import com.zilinli.staybooking.model.User;
-import com.zilinli.staybooking.repository.StayRepository;
+import com.zilinli.staybooking.exception.GCSUploadException;
 
 // Framework includes
+import com.google.cloud.storage.Acl;
+import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.transaction.Transactional;
-import java.awt.*;
+// System includes
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
 @Service
-public class StayService {
+public class ImageStorageService {
 
 //**********************************************************************************************************************
 // * Class constructors
 //**********************************************************************************************************************
-    public StayService(StayRepository stayRepository, ImageStorageService imageStorageService) {
-        this.stayRepository = stayRepository;
-        this.imageStorageService = imageStorageService;
+
+    ImageStorageService(Storage storage) {
+        this.storage = storage;
     }
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    public List<Stay> listByUser(String username) {
-        return stayRepository.findByHost(new User.Builder().setUsername(username).build());
-    }
-
-    public Stay findByIdAndHost(Long stayId, String username) throws StayNotExistException {
-        Stay stay = stayRepository.findByIdAndHost(stayId, new User.Builder().setUsername(username).build());
-        if (stay == null) {
-            throw new StayNotExistException("Stay does not exist");
+    public String save(MultipartFile file) throws GCSUploadException {
+        String filename = UUID.randomUUID().toString();
+        BlobInfo blobInfo = null;
+        try {
+            blobInfo = storage.createFrom(
+                    BlobInfo
+                            .newBuilder(bucketName, filename)
+                            .setContentType("image/jpeg")
+                            .setAcl(new ArrayList<>(Arrays.asList(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER))))
+                            .build(),
+                    file.getInputStream());
+        } catch (IOException exception) {
+            throw new GCSUploadException("Failed to upload file to GCS");
         }
-        return stay;
+        return blobInfo.getMediaLink();
     }
 
-    @Transactional
-    public void addStay(Stay stay, MultipartFile[] images) {
-
-        // Arrays.stream(T[] array) -> Stream<T> array
-        List<String> mediaLinks = Arrays.stream(images).parallel().
-                                                        map(image -> imageStorageService.save(image))
-                                                        .collect(Collectors.toList());
-        List<StayImage> stayImages = new ArrayList<>();
-        for (String mediaLink : mediaLinks) {
-            stayImages.add(new StayImage(mediaLink, stay));
-        }
-        stay.setImages(stayImages);
-        stayRepository.save(stay);
-    }
-
-    @Transactional
-    public void delete(Long stayId, String username) {
-        Stay stay = stayRepository.findByIdAndHost(stayId, new User.Builder().setUsername(username).build());
-        if (stay == null) {
-            throw new StayNotExistException("Stay does not exist");
-        }
-        stayRepository.deleteById(stayId);
-    }
 //**********************************************************************************************************************
 // * Protected methods
 //**********************************************************************************************************************
@@ -90,7 +71,8 @@ public class StayService {
 //**********************************************************************************************************************
 // * Private attributes
 //**********************************************************************************************************************
+    @Value("${gcs.bucket}")
+    private String bucketName;
 
-    private final StayRepository stayRepository;
-    private final ImageStorageService imageStorageService;
+    private final Storage storage;
 }

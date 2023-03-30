@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 // System includes
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.List;
 
 //**********************************************************************************************************************
@@ -25,7 +26,7 @@ import java.util.List;
 @Entity
 @Table(name = "stay")
 @JsonDeserialize(builder = Stay.Builder.class)
-public class Stay {
+public class Stay implements Serializable {
 
 //**********************************************************************************************************************
 // * Class constructors
@@ -40,6 +41,7 @@ public class Stay {
         this.guestNumber = builder.guestNumber;
         this.host = builder.host;
         this.reservedDates = builder.reservedDates;
+        this.images = builder.images;
     }
 
 //**********************************************************************************************************************
@@ -67,6 +69,9 @@ public class Stay {
 
         @JsonProperty("dates")
         private List<StayReservedDate> reservedDates;
+
+        @JsonProperty("images")
+        private List<StayImage> images;
 
         public Stay build() {
             return new Stay(this);
@@ -106,6 +111,11 @@ public class Stay {
             this.reservedDates = reservedDates;
             return this;
         }
+
+        public Builder setImages(List<StayImage> images) {
+            this.images = images;
+            return this;
+        }
     }
 //**********************************************************************************************************************
 // * Public methods
@@ -139,6 +149,15 @@ public class Stay {
         return reservedDates;
     }
 
+    public List<StayImage> getImages() {
+        return images;
+    }
+
+    public Stay setImages(List<StayImage> images) {
+        this.images = images;
+        return this;
+    }
+
 //**********************************************************************************************************************
 // * Protected methods
 //**********************************************************************************************************************
@@ -169,4 +188,6 @@ public class Stay {
     @OneToMany(mappedBy = "stay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<StayReservedDate> reservedDates;
 
+    @OneToMany(mappedBy = "stay", cascade = CascadeType.ALL, fetch=FetchType.EAGER)
+    private List<StayImage> images;
 }
