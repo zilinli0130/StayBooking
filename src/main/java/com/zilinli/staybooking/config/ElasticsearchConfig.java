@@ -2,30 +2,27 @@
 // * Documentation
 // * Author: zilin.li
 // * Date: 03/23
-// * Definition: Implementation of StayRepository class.
+// * Definition: Implementation of ElasticsearchConfig class.
 //**********************************************************************************************************************
 
-package com.zilinli.staybooking.repository;
+package com.zilinli.staybooking.config;
 //**********************************************************************************************************************
 // * Includes
 //**********************************************************************************************************************
 
-// Project includes
-import com.zilinli.staybooking.model.Stay;
-import com.zilinli.staybooking.model.User;
-
 // Framework includes
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-// System includes
-import java.util.List;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.elasticsearch.client.ClientConfiguration;
+import org.springframework.data.elasticsearch.client.RestClients;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
-@Repository
-public interface StayRepository extends JpaRepository<Stay, Long> {
+@Configuration
+public class ElasticsearchConfig {
 
 //**********************************************************************************************************************
 // * Class constructors
@@ -34,9 +31,18 @@ public interface StayRepository extends JpaRepository<Stay, Long> {
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    List<Stay> findByHost(User user);
-    Stay findByIdAndHost(Long id, User host);
-    List<Stay> findByIdInAndGuestNumberGreaterThanEqual(List<Long> ids, int guestNumber);
+
+    // Create the ES client
+    @Bean
+    public RestHighLevelClient elasticsearchClient() {
+        ClientConfiguration clientConfiguration
+                = ClientConfiguration.builder()
+                .connectedTo(elasticsearchAddress)
+                .withBasicAuth(elasticsearchUsername, elasticsearchPassword)
+                .build();
+
+        return RestClients.create(clientConfiguration).rest();
+    }
 //**********************************************************************************************************************
 // * Protected methods
 //**********************************************************************************************************************
@@ -49,5 +55,13 @@ public interface StayRepository extends JpaRepository<Stay, Long> {
 // * Private attributes
 //**********************************************************************************************************************
 
+    @Value("${elasticsearch.address}")
+    private String elasticsearchAddress;
+
+    @Value("${elasticsearch.username}")
+    private String elasticsearchUsername;
+
+    @Value("${elasticsearch.password}")
+    private String elasticsearchPassword;
 
 }

@@ -2,7 +2,7 @@
 // * Documentation
 // * Author: zilin.li
 // * Date: 03/23
-// * Definition: Implementation of StayRepository class.
+// * Definition: Implementation of CustomLocationRepository class.
 //**********************************************************************************************************************
 
 package com.zilinli.staybooking.repository;
@@ -10,22 +10,13 @@ package com.zilinli.staybooking.repository;
 // * Includes
 //**********************************************************************************************************************
 
-// Project includes
-import com.zilinli.staybooking.model.Stay;
-import com.zilinli.staybooking.model.User;
 
-// Framework includes
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-// System includes
 import java.util.List;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
-@Repository
-public interface StayRepository extends JpaRepository<Stay, Long> {
+public interface CustomLocationRepository {
 
 //**********************************************************************************************************************
 // * Class constructors
@@ -34,9 +25,8 @@ public interface StayRepository extends JpaRepository<Stay, Long> {
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    List<Stay> findByHost(User user);
-    Stay findByIdAndHost(Long id, User host);
-    List<Stay> findByIdInAndGuestNumberGreaterThanEqual(List<Long> ids, int guestNumber);
+List<Long> searchByDistance(double lat, double lon, String dist);
+
 //**********************************************************************************************************************
 // * Protected methods
 //**********************************************************************************************************************

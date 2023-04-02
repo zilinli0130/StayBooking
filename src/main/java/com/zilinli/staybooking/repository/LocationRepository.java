@@ -2,7 +2,7 @@
 // * Documentation
 // * Author: zilin.li
 // * Date: 03/23
-// * Definition: Implementation of StayRepository class.
+// * Definition: Implementation of LocationRepository class.
 //**********************************************************************************************************************
 
 package com.zilinli.staybooking.repository;
@@ -11,21 +11,18 @@ package com.zilinli.staybooking.repository;
 //**********************************************************************************************************************
 
 // Project includes
-import com.zilinli.staybooking.model.Stay;
-import com.zilinli.staybooking.model.User;
+import com.zilinli.staybooking.model.Location;
 
 // Framework includes
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
-
-// System includes
-import java.util.List;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
 @Repository
-public interface StayRepository extends JpaRepository<Stay, Long> {
+public interface LocationRepository extends ElasticsearchRepository<Location, Long>, CustomLocationRepository {
+
 
 //**********************************************************************************************************************
 // * Class constructors
@@ -34,9 +31,7 @@ public interface StayRepository extends JpaRepository<Stay, Long> {
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    List<Stay> findByHost(User user);
-    Stay findByIdAndHost(Long id, User host);
-    List<Stay> findByIdInAndGuestNumberGreaterThanEqual(List<Long> ids, int guestNumber);
+
 //**********************************************************************************************************************
 // * Protected methods
 //**********************************************************************************************************************

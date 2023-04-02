@@ -2,30 +2,25 @@
 // * Documentation
 // * Author: zilin.li
 // * Date: 03/23
-// * Definition: Implementation of StayRepository class.
+// * Definition: Implementation of GoogleGeoCodingConfig class.
 //**********************************************************************************************************************
 
-package com.zilinli.staybooking.repository;
+package com.zilinli.staybooking.config;
 //**********************************************************************************************************************
 // * Includes
 //**********************************************************************************************************************
 
-// Project includes
-import com.zilinli.staybooking.model.Stay;
-import com.zilinli.staybooking.model.User;
-
 // Framework includes
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-// System includes
-import java.util.List;
+import com.google.maps.GeoApiContext;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
-@Repository
-public interface StayRepository extends JpaRepository<Stay, Long> {
+@Configuration
+public class GoogleGeoCodingConfig {
 
 //**********************************************************************************************************************
 // * Class constructors
@@ -34,20 +29,24 @@ public interface StayRepository extends JpaRepository<Stay, Long> {
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    List<Stay> findByHost(User user);
-    Stay findByIdAndHost(Long id, User host);
-    List<Stay> findByIdInAndGuestNumberGreaterThanEqual(List<Long> ids, int guestNumber);
+
+    @Bean
+    public GeoApiContext geoApiContext() {
+        return new GeoApiContext.Builder().apiKey(apiKey).build();
+    }
 //**********************************************************************************************************************
 // * Protected methods
-//**********************************************************************************************************************
 
+//**********************************************************************************************************************
 //**********************************************************************************************************************
 // * Private methods
-//**********************************************************************************************************************
 
+//**********************************************************************************************************************
 //**********************************************************************************************************************
 // * Private attributes
+
 //**********************************************************************************************************************
 
-
+    @Value("${geocoding.apikey}")
+    private String apiKey;
 }

@@ -2,7 +2,7 @@
 // * Documentation
 // * Author: zilin.li
 // * Date: 03/23
-// * Definition: Implementation of StayRepository class.
+// * Definition: Implementation of StayReservationDateRepository class.
 //**********************************************************************************************************************
 
 package com.zilinli.staybooking.repository;
@@ -11,21 +11,24 @@ package com.zilinli.staybooking.repository;
 //**********************************************************************************************************************
 
 // Project includes
-import com.zilinli.staybooking.model.Stay;
-import com.zilinli.staybooking.model.User;
+import com.zilinli.staybooking.model.StayReservedDate;
+import com.zilinli.staybooking.model.StayReservedDateKey;
 
 // Framework includes
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 // System includes
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
 @Repository
-public interface StayRepository extends JpaRepository<Stay, Long> {
+public interface StayReservationDateRepository extends JpaRepository<StayReservedDate, StayReservedDateKey> {
 
 //**********************************************************************************************************************
 // * Class constructors
@@ -34,9 +37,9 @@ public interface StayRepository extends JpaRepository<Stay, Long> {
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    List<Stay> findByHost(User user);
-    Stay findByIdAndHost(Long id, User host);
-    List<Stay> findByIdInAndGuestNumberGreaterThanEqual(List<Long> ids, int guestNumber);
+
+    @Query(value = "SELECT srd.id.stay_id FROM StayReservedDate srd WHERE srd.id.stay_id IN ?1 AND srd.id.date BETWEEN ?2 AND ?3 GROUP BY srd.id.stay_id")
+    Set<Long> findByIdInAndDateBetween(List<Long> stayIds, LocalDate startDate, LocalDate endDate);
 //**********************************************************************************************************************
 // * Protected methods
 //**********************************************************************************************************************

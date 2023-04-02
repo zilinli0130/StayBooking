@@ -11,10 +11,13 @@ package com.zilinli.staybooking.service;
 //**********************************************************************************************************************
 
 // Project includes
+import com.zilinli.staybooking.exception.GeoCodingException;
 import com.zilinli.staybooking.exception.StayNotExistException;
+import com.zilinli.staybooking.model.Location;
 import com.zilinli.staybooking.model.Stay;
 import com.zilinli.staybooking.model.StayImage;
 import com.zilinli.staybooking.model.User;
+import com.zilinli.staybooking.repository.LocationRepository;
 import com.zilinli.staybooking.repository.StayRepository;
 
 // Framework includes
@@ -37,9 +40,11 @@ public class StayService {
 //**********************************************************************************************************************
 // * Class constructors
 //**********************************************************************************************************************
-    public StayService(StayRepository stayRepository, ImageStorageService imageStorageService) {
+    public StayService(StayRepository stayRepository, ImageStorageService imageStorageService, LocationRepository locationRepository, GeoCodingService geoCodingService) {
         this.stayRepository = stayRepository;
         this.imageStorageService = imageStorageService;
+        this.locationRepository = locationRepository;
+        this.geoCodingService = geoCodingService;
     }
 //**********************************************************************************************************************
 // * Public methods
@@ -69,6 +74,10 @@ public class StayService {
         }
         stay.setImages(stayImages);
         stayRepository.save(stay);
+
+        // Save location of stay to ES
+        Location location = geoCodingService.getLatLng(stay.getId(), stay.getAddress());
+        locationRepository.save(location);
     }
 
     @Transactional
@@ -78,6 +87,10 @@ public class StayService {
             throw new StayNotExistException("Stay does not exist");
         }
         stayRepository.deleteById(stayId);
+
+        // Delete location of stay to ES
+        Location location = geoCodingService.getLatLng(stay.getId(), stay.getAddress());
+        locationRepository.delete(location);
     }
 //**********************************************************************************************************************
 // * Protected methods
@@ -93,4 +106,9 @@ public class StayService {
 
     private final StayRepository stayRepository;
     private final ImageStorageService imageStorageService;
+
+    private final LocationRepository locationRepository;
+
+    private final GeoCodingService geoCodingService;
+
 }

@@ -2,7 +2,7 @@
 // * Documentation
 // * Author: zilin.li
 // * Date: 03/23
-// * Definition: Implementation of StayRepository class.
+// * Definition: Implementation of CustomLocationRepository class.
 //**********************************************************************************************************************
 
 package com.zilinli.staybooking.repository;
@@ -11,32 +11,50 @@ package com.zilinli.staybooking.repository;
 //**********************************************************************************************************************
 
 // Project includes
-import com.zilinli.staybooking.model.Stay;
-import com.zilinli.staybooking.model.User;
+import com.zilinli.staybooking.model.Location;
 
 // Framework includes
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.elasticsearch.common.unit.DistanceUnit;
+import org.elasticsearch.index.query.GeoDistanceQueryBuilder;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 
 // System includes
+import java.util.ArrayList;
 import java.util.List;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
-@Repository
-public interface StayRepository extends JpaRepository<Stay, Long> {
+public class CustomLocationRepositoryImpl implements CustomLocationRepository {
 
 //**********************************************************************************************************************
 // * Class constructors
 //**********************************************************************************************************************
-
+    public CustomLocationRepositoryImpl(ElasticsearchOperations elasticsearchOperations) {
+        this.elasticSearchOperations = elasticsearchOperations;
+    }
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    List<Stay> findByHost(User user);
-    Stay findByIdAndHost(Long id, User host);
-    List<Stay> findByIdInAndGuestNumberGreaterThanEqual(List<Long> ids, int guestNumber);
+    @Override
+    public List<Long> searchByDistance(double lat, double lon, String dist) {
+        if (dist == null || dist.isEmpty()) {
+            dist = DEFAULT_DISTANCE;
+        }
+
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        queryBuilder.withFilter(new GeoDistanceQueryBuilder("geoPoint").point(lat, lon).distance(dist, DistanceUnit.KILOMETERS));
+        SearchHits<Location> searchResult = elasticSearchOperations.search(queryBuilder.build(), Location.class);
+        List<Long> locationIDs = new ArrayList<>();
+        for (SearchHit<Location> hit : searchResult.getSearchHits()) {
+            locationIDs.add(hit.getContent().getId());
+        }
+        return locationIDs;
+
+    }
 //**********************************************************************************************************************
 // * Protected methods
 //**********************************************************************************************************************
@@ -49,5 +67,7 @@ public interface StayRepository extends JpaRepository<Stay, Long> {
 // * Private attributes
 //**********************************************************************************************************************
 
+    private static final String DEFAULT_DISTANCE = "50";
+    private final ElasticsearchOperations elasticSearchOperations;
 
 }

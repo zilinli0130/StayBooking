@@ -2,41 +2,51 @@
 // * Documentation
 // * Author: zilin.li
 // * Date: 03/23
-// * Definition: Implementation of StayRepository class.
+// * Definition: Implementation of Location class.
 //**********************************************************************************************************************
 
-package com.zilinli.staybooking.repository;
+package com.zilinli.staybooking.model;
 //**********************************************************************************************************************
 // * Includes
 //**********************************************************************************************************************
 
-// Project includes
-import com.zilinli.staybooking.model.Stay;
-import com.zilinli.staybooking.model.User;
-
 // Framework includes
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.GeoPointField;
+import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
 // System includes
-import java.util.List;
+import java.io.Serializable;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
-@Repository
-public interface StayRepository extends JpaRepository<Stay, Long> {
+@Document(indexName = "loc")
+public class Location implements Serializable {
 
 //**********************************************************************************************************************
 // * Class constructors
 //**********************************************************************************************************************
 
+    public Location(Long id, GeoPoint geoPoint) {
+        this.id = id;
+        this.geoPoint = geoPoint;
+    }
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    List<Stay> findByHost(User user);
-    Stay findByIdAndHost(Long id, User host);
-    List<Stay> findByIdInAndGuestNumberGreaterThanEqual(List<Long> ids, int guestNumber);
+
+    public Long getId() {
+        return id;
+    }
+
+    public GeoPoint getGeoPoint() {
+        return geoPoint;
+    }
+
 //**********************************************************************************************************************
 // * Protected methods
 //**********************************************************************************************************************
@@ -49,5 +59,12 @@ public interface StayRepository extends JpaRepository<Stay, Long> {
 // * Private attributes
 //**********************************************************************************************************************
 
+    @Id
+    @Field(type = FieldType.Long)
+    private Long id;
 
+    @GeoPointField
+    private GeoPoint geoPoint;
+
+    private static final long serialVersionUID = 1L;
 }

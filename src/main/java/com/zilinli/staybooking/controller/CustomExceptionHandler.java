@@ -11,10 +11,7 @@ package com.zilinli.staybooking.controller;
 //**********************************************************************************************************************
 
 // Project includes
-import com.zilinli.staybooking.exception.GCSUploadException;
-import com.zilinli.staybooking.exception.StayNotExistException;
-import com.zilinli.staybooking.exception.UserAlreadyExistException;
-import com.zilinli.staybooking.exception.UserNotExistException;
+import com.zilinli.staybooking.exception.*;
 
 // Framework includes
 import org.springframework.http.HttpStatus;
@@ -54,6 +51,21 @@ public class CustomExceptionHandler {
     @ExceptionHandler(GCSUploadException.class)
     public final ResponseEntity<String> handleGCSUploadExceptions(Exception ex, WebRequest request) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidSearchDateException.class)
+    public final ResponseEntity<String> handleInvalidSearchDateExceptions(Exception ex, WebRequest request) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(GeoCodingException.class)
+    public final ResponseEntity<String> handleGeoCodingExceptions(Exception ex, WebRequest request) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(InvalidStayAddressException.class)
+    public final ResponseEntity<String> handleInvalidStayAddressExceptions(Exception ex, WebRequest request) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
 //**********************************************************************************************************************
