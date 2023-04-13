@@ -1,8 +1,8 @@
 //**********************************************************************************************************************
 // * Documentation
 // * Author: zilin.li
-// * Date: 03/23
-// * Definition: Implementation of StayController class.
+// * Date: 04/23
+// * Definition: Implementation of ReservationController class.
 //**********************************************************************************************************************
 
 package com.zilinli.staybooking.controller;
@@ -11,76 +11,56 @@ package com.zilinli.staybooking.controller;
 //**********************************************************************************************************************
 
 // Project includes
+import com.zilinli.staybooking.exception.InvalidReservationDateException;
 import com.zilinli.staybooking.model.Reservation;
-import com.zilinli.staybooking.model.Stay;
 import com.zilinli.staybooking.model.User;
-import com.zilinli.staybooking.service.ReservationService;
-import com.zilinli.staybooking.service.StayService;
 
 // Framework includes
+import com.zilinli.staybooking.service.ReservationService;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 // System includes
-import java.util.List;
 import java.security.Principal;
+import java.time.LocalDate;
+import java.util.List;
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
 @RestController
-public class StayController {
+public class ReservationController {
 
 //**********************************************************************************************************************
 // * Class constructors
 //**********************************************************************************************************************
 
-    public StayController(StayService stayService, ReservationService reservationService) {
-        this.stayService = stayService;
+    public ReservationController(ReservationService reservationService) {
         this.reservationService = reservationService;
     }
+
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    @GetMapping(value = "/stays")
-    public List<Stay> listStays(Principal principal) {
-        return stayService.listByUser(principal.getName());
+    @GetMapping(value = "/reservations")
+    public List<Reservation> listReservations(Principal principal) {
+        return reservationService.listByGuest(principal.getName());
     }
 
-    @GetMapping(value = "/stays/{stayId}")
-    public Stay getStay(@PathVariable Long stayId, Principal principal) {
-        return stayService.findByIdAndHost(stayId, principal.getName());
+    @PostMapping("/reservations")
+    public void addReservation(@RequestBody Reservation reservation, Principal principal) {
+        LocalDate checkinDate = reservation.getCheckinDate();
+        LocalDate checkoutDate = reservation.getCheckoutDate();
+        if (checkinDate.equals(checkoutDate) || checkinDate.isAfter(checkoutDate) || checkinDate.isBefore(LocalDate.now())) {
+            throw new InvalidReservationDateException("Invalid date for reservation");
+        }
+        reservation.setGuest(new User.Builder().setUsername(principal.getName()).build());
+        reservationService.add(reservation);
     }
 
-    @GetMapping(value = "/stays/reservations/{stayId}")
-    public List<Reservation> listReservations(@PathVariable Long stayId) {
-        return reservationService.listByStay(stayId);
+    @DeleteMapping("/reservations/{reservationId}")
+    public void deleteReservation(@PathVariable Long reservationId, Principal principal) {
+        reservationService.delete(reservationId, principal.getName());
     }
-
-    @PostMapping("/stays")
-    public void addStay(
-            @RequestParam("name") String name,
-            @RequestParam("address") String address,
-            @RequestParam("description") String description,
-            @RequestParam("guest_number") int guestNumber,
-            @RequestParam("images") MultipartFile[] images,
-            Principal principal) {
-
-        Stay stay = new Stay.Builder()
-                .setName(name)
-                .setAddress(address)
-                .setDescription(description)
-                .setGuestNumber(guestNumber)
-                .setHost(new User.Builder().setUsername(principal.getName()).build())
-                .build();
-        stayService.addStay(stay, images);
-    }
-
-    @DeleteMapping("/stays/{stayId}")
-    public void deleteStay(@PathVariable Long stayId, Principal principal) {
-        stayService.delete(stayId, principal.getName());
-    }
-
 
 //**********************************************************************************************************************
 // * Protected methods
@@ -94,6 +74,6 @@ public class StayController {
 // * Private attributes
 //**********************************************************************************************************************
 
-    private final StayService stayService;
-    private final ReservationService reservationService;
+    private ReservationService reservationService;
+
 }

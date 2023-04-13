@@ -12,20 +12,21 @@ package com.zilinli.staybooking.service;
 
 // Project includes
 import com.zilinli.staybooking.exception.GeoCodingException;
+import com.zilinli.staybooking.exception.StayDeleteException;
 import com.zilinli.staybooking.exception.StayNotExistException;
-import com.zilinli.staybooking.model.Location;
-import com.zilinli.staybooking.model.Stay;
-import com.zilinli.staybooking.model.StayImage;
-import com.zilinli.staybooking.model.User;
+import com.zilinli.staybooking.model.*;
 import com.zilinli.staybooking.repository.LocationRepository;
+import com.zilinli.staybooking.repository.ReservationRepository;
 import com.zilinli.staybooking.repository.StayRepository;
 
 // Framework includes
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.transaction.Transactional;
+// System includes
 import java.awt.*;
+import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,11 +41,12 @@ public class StayService {
 //**********************************************************************************************************************
 // * Class constructors
 //**********************************************************************************************************************
-    public StayService(StayRepository stayRepository, ImageStorageService imageStorageService, LocationRepository locationRepository, GeoCodingService geoCodingService) {
+    public StayService(StayRepository stayRepository, ImageStorageService imageStorageService, LocationRepository locationRepository, GeoCodingService geoCodingService, ReservationRepository reservationRepository) {
         this.stayRepository = stayRepository;
         this.imageStorageService = imageStorageService;
         this.locationRepository = locationRepository;
         this.geoCodingService = geoCodingService;
+        this.reservationRepository = reservationRepository;
     }
 //**********************************************************************************************************************
 // * Public methods
@@ -86,6 +88,12 @@ public class StayService {
         if (stay == null) {
             throw new StayNotExistException("Stay does not exist");
         }
+
+        List<Reservation> reservations = reservationRepository.findByStayAndCheckoutDateAfter(stay, LocalDate.now());
+        if (reservations != null && reservations.size() > 0) {
+            throw new StayDeleteException("Cannot delete stay with active reservation");
+        }
+
         stayRepository.deleteById(stayId);
 
         // Delete location of stay to ES
@@ -108,6 +116,8 @@ public class StayService {
     private final ImageStorageService imageStorageService;
 
     private final LocationRepository locationRepository;
+
+    private final ReservationRepository reservationRepository;
 
     private final GeoCodingService geoCodingService;
 
