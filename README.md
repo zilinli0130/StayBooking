@@ -22,13 +22,13 @@
 
 `chmod 600 <Your saved private key pem file from step1.3>`
 
-`ssh -i <Your saved private key pem file from step1.3> @ubuntu<Your EC2 instance public IP address>`
+`ssh -i <Your saved private key pem file from step1.3> ubuntu@<Your EC2 instance public IP address>`
 
 for example:
 
 `chmod 600 ~/Download/my_key.pem`
 
-`ssh -i ~/Download/my_key.pem @ubuntu3.16.122.94`
+`ssh -i ~/Download/my_key.pem ubuntu@3.16.122.94`
 
 -----------------------------------------------------------------------
 
