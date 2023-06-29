@@ -48,11 +48,6 @@ public class CustomExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(GCSUploadException.class)
-    public final ResponseEntity<String> handleGCSUploadExceptions(Exception ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
-    }
-
     @ExceptionHandler(InvalidSearchDateException.class)
     public final ResponseEntity<String> handleInvalidSearchDateExceptions(Exception ex, WebRequest request) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
@@ -85,6 +80,11 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler(StayDeleteException.class)
     public final ResponseEntity<String> handleStayDeleteExceptions(Exception ex, WebRequest request) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(AwsS3UploadException.class)
+    public final ResponseEntity<String> handleAwsS3UploadExceptions(Exception ex, WebRequest request) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 

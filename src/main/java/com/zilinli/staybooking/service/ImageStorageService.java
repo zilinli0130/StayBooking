@@ -11,20 +11,20 @@ package com.zilinli.staybooking.service;
 //**********************************************************************************************************************
 
 // Project includes
-import com.zilinli.staybooking.exception.GCSUploadException;
+import com.zilinli.staybooking.exception.AwsS3UploadException;
 
 // Framework includes
-import com.google.cloud.storage.Acl;
-import com.google.cloud.storage.BlobInfo;
-import com.google.cloud.storage.Storage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 // System includes
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.io.InputStream;
 import java.util.UUID;
 
 //**********************************************************************************************************************
@@ -37,27 +37,33 @@ public class ImageStorageService {
 // * Class constructors
 //**********************************************************************************************************************
 
-    ImageStorageService(Storage storage) {
-        this.storage = storage;
+    ImageStorageService(S3Client s3) {
+        this.s3 = s3;
     }
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
-    public String save(MultipartFile file) throws GCSUploadException {
+    public String save(MultipartFile file) throws AwsS3UploadException {
         String filename = UUID.randomUUID().toString();
-        BlobInfo blobInfo = null;
-        try {
-            blobInfo = storage.createFrom(
-                    BlobInfo
-                            .newBuilder(bucketName, filename)
-                            .setContentType("image/jpeg")
-                            .setAcl(new ArrayList<>(Arrays.asList(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER))))
-                            .build(),
-                    file.getInputStream());
-        } catch (IOException exception) {
-            throw new GCSUploadException("Failed to upload file to GCS");
+        PutObjectRequest objectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(filename)
+                .acl("public-read")
+                .contentType("image/jpeg")
+                .build();
+
+        try (InputStream is = file.getInputStream()) {
+            PutObjectResponse response = s3.putObject(objectRequest,
+                    RequestBody.fromInputStream(is, file.getSize()));
+
+            if (response.sdkHttpResponse().statusCode() != 200) {
+                throw new IOException("Failed to upload file to S3, status code: " + response.sdkHttpResponse().statusCode());
+            }
+
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
-        return blobInfo.getMediaLink();
+        return "https://" + bucketName + ".s3.amazonaws.com/" + filename;
     }
 
 //**********************************************************************************************************************
@@ -71,8 +77,8 @@ public class ImageStorageService {
 //**********************************************************************************************************************
 // * Private attributes
 //**********************************************************************************************************************
-    @Value("${gcs.bucket}")
+    @Value("${s3.bucket}")
     private String bucketName;
 
-    private final Storage storage;
+    private final S3Client s3;
 }

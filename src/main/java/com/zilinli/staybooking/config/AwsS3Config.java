@@ -1,8 +1,8 @@
 //**********************************************************************************************************************
 // * Documentation
 // * Author: zilin.li
-// * Date: 03/23
-// * Definition: Implementation of GoogleCloudStorageConfig class.
+// * Date: 06/23
+// * Definition: Implementation of AwsS3Config class.
 //**********************************************************************************************************************
 
 package com.zilinli.staybooking.config;
@@ -10,22 +10,22 @@ package com.zilinli.staybooking.config;
 // * Includes
 //**********************************************************************************************************************
 
-// Framework includes
-import com.google.auth.Credentials;
-import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-// System includes
-import java.io.IOException;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+
 
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
 @Configuration
-public class GoogleCloudStorageConfig {
+public class AwsS3Config {
 
 //**********************************************************************************************************************
 // * Class constructors
@@ -34,10 +34,13 @@ public class GoogleCloudStorageConfig {
 //**********************************************************************************************************************
 // * Public methods
 //**********************************************************************************************************************
+
     @Bean
-    public Storage storage() throws IOException {
-        Credentials credentials = ServiceAccountCredentials.fromStream(getClass().getClassLoader().getResourceAsStream("credentials.json"));
-        return StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+    public S3Client s3Client() {
+        return S3Client.builder()
+                .region(Region.of(region))
+                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
+                .build();
     }
 
 //**********************************************************************************************************************
@@ -51,6 +54,13 @@ public class GoogleCloudStorageConfig {
 //**********************************************************************************************************************
 // * Private attributes
 //**********************************************************************************************************************
+    @Value("${aws.accessKeyId}")
+    private String accessKey;
 
+    @Value("${aws.secretKey}")
+    private String secretKey;
+
+    @Value("${aws.region}")
+    private String region;
 
 }

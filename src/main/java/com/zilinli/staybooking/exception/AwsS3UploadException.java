@@ -1,8 +1,8 @@
 //**********************************************************************************************************************
 // * Documentation
 // * Author: zilin.li
-// * Date: 03/23
-// * Definition: Implementation of GCSUploadException class.
+// * Date: 06/23
+// * Definition: Implementation of AwsS3UploadException class.
 //**********************************************************************************************************************
 
 package com.zilinli.staybooking.exception;
@@ -14,12 +14,12 @@ package com.zilinli.staybooking.exception;
 //**********************************************************************************************************************
 // * Class definition
 //**********************************************************************************************************************
-public class GCSUploadException extends RuntimeException{
+public class AwsS3UploadException extends RuntimeException {
 
 //**********************************************************************************************************************
 // * Class constructors
 //**********************************************************************************************************************
-    public GCSUploadException(String message) {
+    public AwsS3UploadException(String message) {
         super(message);
     }
 
