@@ -2,6 +2,8 @@
 
 ### Introduction
 
+#### This is an online web platform which allows user with different roles (host or guest) to either uploading stay or reservating a stay. The stay search leverages the inverted index feature from ElasticSearch to search any stay locations that are within the target distance range w.r.t the target input reference location. The stay address will be converted to geo location (longtitude, latitude) by GeoCoding API while uploading the stay, and then being saved to ElasticSearch repository to achieve geo-based search. 
+
 ---
 
 ### Backend Software Archigecture
@@ -55,8 +57,27 @@
 ### Database Schema Design
 
 
+![database_schema_design](image/database_schema_design.PNG)
 
----
+Authority - indicates whether the user is geust or host
+
+User - contains user information (username, password)
+
+Stay - contains stay information (address, descirption, max guest number, name, stay image, list of stay reservation date, list of stay reservation) 
+
+Reservation - contains reservation information (stay id, check-in date, check-out date)
+
+StayImage - contains stay image information (stay id, media url)
+
+StayReservationDate - contains stay reserved date information (stay id, date)
+
+
+One user can have multiple stays or reservations (1->N)
+
+One stay can have multiple stay images, stay reserved dates, reservations (1->N)
+
+Multiple reservations correspond to one stay (N->1)
+
 ---
 ### Install Elasticsearch on AWS EC2 Guideline
 
