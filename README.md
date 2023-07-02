@@ -1,6 +1,63 @@
 # stay_booking
 
+### Introduction
 
+---
+
+### Backend Software Archigecture
+
+![backend_software_architecture](image/backend_software_architecture.PNG)
+
+### Backend Software Design
+
+#### Image Upload Service
+
+1. Call the AWS S3 client to save media files
+
+#### Stay Upload Service
+
+##### Add Stay
+1. Upload media files to object storage by image upload service
+2. Save the stay information to stay repository
+3. Save the stay location to location repository (extended from ElasticSearch repository)
+
+#### Delete Stay
+1. Find the stay from stay repository
+2. Check if the reservations for this stay is empty or not:
+   
+   2.1 Delete the stay if its reservation list is empty
+   
+   2.2 Throw exception if this rrservation list is not empty
+   
+4. Delete the stay location information from location repository (extended from ElasticSearch repository)
+
+#### Stay Search Service
+
+1. Search the available stay locations that are within the given distance range (search param) w.r.t given search location (search param) by location repository (extended from ElasticSeatch repository)
+2. Search the reserved stays that are within the given check-in and check-out dates by reservation date repository
+3. Filter out the reserved stays from available stays
+4. Filter out the stays that have less available guest number than the given required guess number (search param)
+
+#### Authentication Service
+
+##### First Time Login
+
+1. Check if username exists on the user repository
+2. Once the username is verified, return a new generated token
+   
+##### Future Login
+
+1. Add a Jwt filter to do internal check on Spring security layer
+   1.1 Extract username from header information and make sure the token is within the header
+   1.2 Make sure token is not expired
+   1.3 Make sure the username is valid
+
+### Database Schema Design
+
+
+
+---
+---
 ### Install Elasticsearch on AWS EC2 Guideline
 
 ##### Step1: Launch AWS EC2
