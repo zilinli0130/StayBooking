@@ -1,4 +1,4 @@
-# stay_booking
+# MyStayBooking
 
 ### Introduction
 
